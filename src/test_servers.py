@@ -3,7 +3,7 @@
 import pytest
 
 
-@pytest.mark.parametrize('message', ['', 'M'])
+@pytest.mark.parametrize('message', ['M', 'Hello World!'])
 def test_echo(message):
     """Test that message received from server is same as message sent."""
     from client import client
