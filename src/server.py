@@ -13,12 +13,17 @@ def server():
         s.listen(1)
         while True:
             conn, addr = s.accept()
+            conn.settimeout(1)
 
-            packet = conn.recv(8)
-            message = packet
-            while len(packet) == 8:
+            message = b''
+            try:
                 packet = conn.recv(8)
-                message += packet
+                message = packet
+                while len(packet) == 8:
+                    packet = conn.recv(8)
+                    message += packet
+            except socket.timeout:
+                pass
 
             conn.sendall(message)
             conn.close()
