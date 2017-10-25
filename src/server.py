@@ -1,6 +1,8 @@
 """Simple server built using socket."""
 
 import socket
+import sys
+from email.utils import formatdate
 
 
 def server():
@@ -14,19 +16,20 @@ def server():
         print('Server started')
         while True:
             conn, addr = s.accept()
-            conn.settimeout(1)
+            conn.settimeout(2)
 
-            message = b''
+            request = b''
             try:
                 packet = conn.recv(8)
-                message = packet
-                while len(packet) == 8:
+                request = packet
+                while b'\r\n\r\n' not in request:
                     packet = conn.recv(8)
-                    message += packet
+                    request += packet
             except socket.timeout:
                 pass
 
-            conn.sendall(message)
+            print(request[:-4].decode('utf8'))
+            conn.sendall(response_ok())
             conn.close()
 
     except KeyboardInterrupt:
@@ -35,6 +38,21 @@ def server():
             print('Connection closed')
         s.close()
         print('Server closed')
+        sys.exit()
+
+
+def response_ok():
+    """Build a well formed HTTP '200 OK' response."""
+    return 'HTTP/1.1 200 OK\r\n\
+Date: {}\r\n\
+\r\n'.format(formatdate(usegmt=True)).encode('utf8')
+
+
+def response_error():
+    """Build a well formed HTTP '500 Internal Server Error' response."""
+    return 'HTTP/1.1 500 Internal Server Error\r\n\
+Date: {}\r\n\
+\r\n'.format(formatdate(usegmt=True)).encode('utf8')
 
 
 if __name__ == "__main__":

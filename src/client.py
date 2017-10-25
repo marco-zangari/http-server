@@ -10,21 +10,20 @@ def client(message):
     c = socket.socket(*socket.getaddrinfo(*address)[1][:3])
     c.connect(address)
 
-    message_encoded = True
     try:
         message = message.encode('utf8')
     except UnicodeDecodeError:
-        message_encoded = False
-    c.sendall(message)
+        pass
+    c.sendall(message + b'\r\n\r\n')
 
     packet = c.recv(8)
     resp = packet
-    while len(packet) == 8:
+    while b'\r\n\r\n' not in resp:
         packet = c.recv(8)
         resp += packet
 
     c.close()
-    return resp.decode('utf8') if message_encoded else resp
+    return resp
 
 if __name__ == '__main__':
     print(client(sys.argv[1]))
