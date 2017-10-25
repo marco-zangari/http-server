@@ -46,6 +46,8 @@ def test_ok_response_well_formatted(fake_socket):
     source = fake_socket(response_ok())
     response = HTTPResponse(source)
     response.begin()
+    assert response.status == 200
+    assert response.getheader('Date') is not None
 
 
 """

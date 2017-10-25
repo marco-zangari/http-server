@@ -1,6 +1,7 @@
 """Simple server built using socket."""
 
 import socket
+from email.utils import formatdate
 
 
 def server():
@@ -39,7 +40,9 @@ def server():
 
 def response_ok():
     """Build a well formed HTTP '200 OK' response."""
-    pass
+    return b'HTTP/1.1 200 OK\r\n\
+Date: %b\r\n\
+\r\n' % formatdate(usegmt=True).encode('utf8')
 
 
 def response_error():
