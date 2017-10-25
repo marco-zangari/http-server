@@ -1,4 +1,4 @@
-# http-server
+# HTTP-SERVER
 Server and client built with Python sockets
 
 **Author**: Megan Flood, Marco Zangari
