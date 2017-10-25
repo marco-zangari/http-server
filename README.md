@@ -2,6 +2,7 @@
 Server and client built with Python sockets
 
 **Author**: Megan Flood, Marco Zangari
+
 **Version**: 2.0.0
 
 ## Overview
