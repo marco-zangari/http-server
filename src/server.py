@@ -37,5 +37,15 @@ def server():
         print('Server closed')
 
 
+def response_ok():
+    """Build a well formed HTTP '200 OK' response."""
+    pass
+
+
+def response_error():
+    """Build a well formed HTTP '500 Internal Server Error' response."""
+    pass
+
+
 if __name__ == "__main__":
     server()
