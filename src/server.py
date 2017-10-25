@@ -1,6 +1,7 @@
 """Simple server built using socket."""
 
 import socket
+import sys
 from email.utils import formatdate
 
 
@@ -17,17 +18,18 @@ def server():
             conn, addr = s.accept()
             conn.settimeout(1)
 
-            message = b''
+            request = b''
             try:
                 packet = conn.recv(8)
-                message = packet
+                request = packet
                 while len(packet) == 8:
                     packet = conn.recv(8)
-                    message += packet
+                    request += packet
             except socket.timeout:
                 pass
 
-            conn.sendall(message)
+            print(request.decode('utf8'))
+            conn.sendall(response_ok())
             conn.close()
 
     except KeyboardInterrupt:
@@ -36,6 +38,7 @@ def server():
             print('Connection closed')
         s.close()
         print('Server closed')
+        sys.exit()
 
 
 def response_ok():

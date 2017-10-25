@@ -28,10 +28,10 @@ def fake_socket():
                                      'aaaaaaabaaaaaaab', 'éclair', 'This is the \
                                      sentence that is longer than the others \
                                      and has spaces too, with punctuation.'])
-def test_echo(message):
-    """Test that message received from server is same as message sent."""
+def test_success_on_sending_message(message):
+    """Test that message received from server gets a 200 response."""
     from client import client
-    assert client(message) == message
+    assert client(message).split('\r\n')[0] == b'HTTP/1.1 200 OK'
 
 
 def test_ok_response_well_formatted(fake_socket):
@@ -48,7 +48,8 @@ def test_ok_response_well_formatted(fake_socket):
     response = HTTPResponse(source)
     response.begin()
     assert response.status == 200
-    assert time.strptime(response.getheader('Date'), '%a, %d %b %Y %H:%M:%S %Z')
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
 
 
 def test_error_response_well_formatted(fake_socket):
@@ -65,7 +66,8 @@ def test_error_response_well_formatted(fake_socket):
     response = HTTPResponse(source)
     response.begin()
     assert response.status == 500
-    assert time.strptime(response.getheader('Date'), '%a, %d %b %Y %H:%M:%S %Z')
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
 
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
