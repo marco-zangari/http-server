@@ -14,11 +14,11 @@ def client(message):
         message = message.encode('utf8')
     except UnicodeDecodeError:
         pass
-    c.sendall(message)
+    c.sendall(message + b'\r\n\r\n')
 
     packet = c.recv(8)
     resp = packet
-    while len(packet) == 8:
+    while b'\r\n\r\n' not in resp:
         packet = c.recv(8)
         resp += packet
 

@@ -16,19 +16,19 @@ def server():
         print('Server started')
         while True:
             conn, addr = s.accept()
-            conn.settimeout(1)
+            conn.settimeout(2)
 
             request = b''
             try:
                 packet = conn.recv(8)
                 request = packet
-                while len(packet) == 8:
+                while b'\r\n\r\n' not in request:
                     packet = conn.recv(8)
                     request += packet
             except socket.timeout:
                 pass
 
-            print(request.decode('utf8'))
+            print(request[:-4].decode('utf8'))
             conn.sendall(response_ok())
             conn.close()
 
