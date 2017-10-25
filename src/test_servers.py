@@ -37,6 +37,7 @@ def test_echo(message):
 def test_ok_response_well_formatted(fake_socket):
     """Test that formatting of 200 HTTP response is correct."""
     from server import response_ok
+    from datetime import datetime as time
 
     if sys.version_info.major == 3:
         from http.client import HTTPResponse
@@ -47,8 +48,24 @@ def test_ok_response_well_formatted(fake_socket):
     response = HTTPResponse(source)
     response.begin()
     assert response.status == 200
-    assert response.getheader('Date') is not None
+    assert time.strptime(response.getheader('Date'), '%a, %d %b %Y %H:%M:%S %Z')
 
+
+def test_error_response_well_formatted(fake_socket):
+    """Test that error reponse of 500 HTTP response is correct."""
+    from server import response_error
+    from datetime import datetime as time
+
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    source = fake_socket(response_error())
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.status == 500
+    assert time.strptime(response.getheader('Date'), '%a, %d %b %Y %H:%M:%S %Z')
 
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string

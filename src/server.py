@@ -40,14 +40,16 @@ def server():
 
 def response_ok():
     """Build a well formed HTTP '200 OK' response."""
-    return b'HTTP/1.1 200 OK\r\n\
-Date: %b\r\n\
-\r\n' % formatdate(usegmt=True).encode('utf8')
+    return 'HTTP/1.1 200 OK\r\n\
+Date: {}\r\n\
+\r\n'.format(formatdate(usegmt=True)).encode('utf8')
 
 
 def response_error():
     """Build a well formed HTTP '500 Internal Server Error' response."""
-    pass
+    return 'HTTP/1.1 500 Internal Server Error\r\n\
+Date: {}\r\n\
+\r\n'.format(formatdate(usegmt=True)).encode('utf8')
 
 
 if __name__ == "__main__":
