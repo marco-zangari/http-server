@@ -78,10 +78,22 @@ def test_error_response_well_formatted(fake_socket):
 #     assert parse_request(req) == b'/index.html'
 
 
+def test_request_parse_invalid_missing_host_header():
+    """Test for invalid missing host header."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+From: frog@j.money.com\r\n\
+User-Agent: Mozilla/3.0Gold\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
 def test_request_parse_invalid_number_of_lines():
     """Test if not three lines in request, raises ValueError."""
     from server import parse_request
-    req = b'GET /index.html HTTP/1.1\r\n'
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n'
     with pytest.raises(ValueError):
         parse_request(req)
 
@@ -90,7 +102,7 @@ def test_request_parse_invalid_line_formatting():
     """Test if line is properly formatted with carriage returns."""
     from server import parse_request
     req = b'GET /index.html HTTP/1.1\r\n\
-HOST /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
 DATE:\r\n'
     with pytest.raises(ValueError):
         parse_request(req)

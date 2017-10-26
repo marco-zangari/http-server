@@ -57,6 +57,9 @@ Date: {}\r\n\
 
 def parse_request(req):
     """Parse the incoming request."""
+    if b'\r\nHost: ' not in req:
+        raise ValueError('Host header missing from request')
+
     req_lines = req.split(b'\r\n')
 
     if len(req_lines) < 4:
