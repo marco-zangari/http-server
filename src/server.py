@@ -58,10 +58,29 @@ Date: {}\r\n\
 def parse_request(req):
     """Parse the incoming request."""
     req_lines = req.split(b'\r\n')
+
     if len(req_lines) < 4:
         raise ValueError('Improper request length')
+
     if req_lines[-1] or req_lines[-2]:
-        raise ValueError('Improper formatting')
+        raise ValueError('Improper request formatting')
+
+    method_uri_protocol = req_lines[0].split()
+
+    if len(method_uri_protocol) != 3:
+        raise ValueError('Improper request formatting')
+
+    if method_uri_protocol[0] != b'GET':
+        raise NotImplementedError('Server only accepts GET requests')
+
+    if not method_uri_protocol[1].startswith(b'/'):
+        print(method_uri_protocol[1][0])
+        raise ValueError('Improper resource path formatting')
+
+    if method_uri_protocol[2] != b'HTTP/1.1':
+        raise NotImplementedError('Server only accepts HTTP/1.1 requests')
+
+    uri = method_uri_protocol[1]
 
 if __name__ == "__main__":
     server()

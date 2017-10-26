@@ -78,19 +78,63 @@ def test_error_response_well_formatted(fake_socket):
 #     assert parse_request(req) == b'/index.html'
 
 
-def test_invalid_number_of_lines_request():
+def test_request_parse_invalid_number_of_lines():
     """Test if not three lines in request, raises ValueError."""
     from server import parse_request
     req = b'GET /index.html HTTP/1.1\r\n'
     with pytest.raises(ValueError):
         parse_request(req)
 
-def test_invalid_line_formatting():
+
+def test_request_parse_invalid_line_formatting():
     """Test if line is properly formatted with carriage returns."""
     from server import parse_request
     req = b'GET /index.html HTTP/1.1\r\n\
 HOST /index.html HTTP/1.1\r\n\
 DATE:\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
+def test_request_parse_invalid_method_uri_protocol_line_formatting():
+    """Test if the first line of req is properly formatted with white space."""
+    from server import parse_request
+    req = b'GET / index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
+@pytest.mark.parametrize('method', ['POST', 'PUT', 'DELETE', 'HEAD', 'get'])
+def test_request_parse_invalid_method_is_not_get(method):
+    """Test if the method is for a GET request."""
+    from server import parse_request
+    req = '{} /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'.format(method).encode('utf8')
+    with pytest.raises(NotImplementedError):
+        parse_request(req)
+
+
+@pytest.mark.parametrize('protocol', ['HTTP/1.2', 'HTTP/1.0', 'HTTP',
+                                      'http/1.1'])
+def test_request_parse_invalid_protocol_is_not_http_11(protocol):
+    """Test if the protocol is for HTTP/1.1."""
+    from server import parse_request
+    req = 'GET /index.html {}\r\n\
+Host: www.example.com\r\n\
+\r\n'.format(protocol).encode('utf8')
+    with pytest.raises(NotImplementedError):
+        parse_request(req)
+
+
+def test_request_parse_invalid_uri_is_not_file_path():
+    """Test if the uri is a valid file path."""
+    from server import parse_request
+    req = b'GET index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
     with pytest.raises(ValueError):
         parse_request(req)
 
