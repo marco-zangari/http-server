@@ -68,6 +68,32 @@ def test_error_response_well_formatted(fake_socket):
     assert time.strptime(response.getheader('Date'),
                          '%a, %d %b %Y %H:%M:%S %Z')
 
+
+# def test_valid_parse_http_request():
+#     """Test the parse_request accepts valid GET http request."""
+#     from server import parse_request
+#     req = b'GET /index.html HTTP/1.1\r\n\
+# Host: www.example.com\r\n\
+# \r\n'
+#     assert parse_request(req) == b'/index.html'
+
+
+def test_invalid_number_of_lines_request():
+    """Test if not three lines in request, raises ValueError."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+def test_invalid_line_formatting():
+    """Test if line is properly formatted with carriage returns."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+HOST /index.html HTTP/1.1\r\n\
+DATE:\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
 Answer by Jeremy Allen

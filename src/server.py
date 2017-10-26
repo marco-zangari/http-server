@@ -55,5 +55,13 @@ Date: {}\r\n\
 \r\n'.format(formatdate(usegmt=True)).encode('utf8')
 
 
+def parse_request(req):
+    """Parse the incoming request."""
+    req_lines = req.split(b'\r\n')
+    if len(req_lines) < 4:
+        raise ValueError('Improper request length')
+    if req_lines[-1] or req_lines[-2]:
+        raise ValueError('Improper formatting')
+
 if __name__ == "__main__":
     server()
