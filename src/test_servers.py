@@ -27,10 +27,28 @@ def fake_socket():
 @pytest.mark.parametrize('message', ['', 'M', 'Hello World!', 'aaaaaaab',
                                      'aaaaaaabaaaaaaab', 'éclair', 'This is a \
 sentence longer than the others and has spaces too, with punctuation.'])
-def test_success_on_sending_message(message):
-    """Test that message received from server gets a 200 response."""
+def test_fail_on_sending_message(message):
+    """Test that message received from server is a 400 response."""
     from client import client
-    assert client(message).split(b'\r\n')[0] == b'HTTP/1.1 200 OK'
+    assert client(message).split('\r\n')[0] == 'HTTP/1.1 400 Bad Request'
+
+
+def test_success_on_sending_http_requests():
+    """Test that message received from server is a 200 response."""
+    from client import client
+    req = 'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    assert client(req).split('\r\n')[0] == 'HTTP/1.1 200 OK'
+
+
+def test_fail_on_sending_non_get_http_requests():
+    """Test that message received from server is a 405 response."""
+    from client import client
+    req = 'POST /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    assert client(req).split('\r\n')[0] == 'HTTP/1.1 405 Method Not Allowed'
 
 
 def test_ok_response_well_formatted(fake_socket):

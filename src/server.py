@@ -6,7 +6,7 @@ from email.utils import formatdate
 from re import match
 
 
-def server():
+def server():  # pragma: no cover
     """Start a new server until user presses control D."""
     try:
         s = socket.socket(socket.AF_INET,
@@ -28,6 +28,8 @@ def server():
                     request += packet
             except socket.timeout:
                 pass
+
+            print(request.decode('utf8'))
 
             try:
                 uri = parse_request(request)
@@ -74,7 +76,11 @@ Date: {date}\r\n\
 
 
 def parse_request(req):
-    """Parse the incoming request."""
+    """Parse the incoming HTTP request.
+
+    ValueError - invalid fomatting
+    NotImplementedError - does not accept anything but GET and HTTP/1.1
+    """
     if b'\r\nHost: ' not in req:
         raise ValueError('Host header missing from request')
 
@@ -117,5 +123,5 @@ def parse_request(req):
 
     return uri
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     server()
