@@ -29,8 +29,20 @@ def server():
             except socket.timeout:
                 pass
 
-            print(request[:-4].decode('utf8'))
-            conn.sendall(response_ok())
+            try:
+                uri = parse_request(request)
+                response = response_ok()
+
+            except ValueError:
+                response = response_error(400, 'Bad Request')
+
+            except NotImplementedError as error:
+                if 'GET' in error.args[0]:
+                    response = response_error(405, 'Method Not Allowed')
+                else:
+                    response = response_error(501, 'Not Implmented')
+
+            conn.sendall(response)
             conn.close()
 
     except KeyboardInterrupt:
