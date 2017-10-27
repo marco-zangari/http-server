@@ -6,9 +6,10 @@ import sys
 
 def client(message):
     """Send message to server and return server's response."""
-    address = ('127.0.0.1', 3000)
-    c = socket.socket(*socket.getaddrinfo(*address)[1][:3])
-    c.connect(address)
+    c = socket.socket(socket.AF_INET,
+                      socket.SOCK_STREAM,
+                      socket.IPPROTO_TCP)
+    c.connect(('127.0.0.1', 3000))
 
     try:
         message = message.encode('utf8')
