@@ -150,6 +150,28 @@ Host: www.example.com\r\n\
     with pytest.raises(ValueError):
         parse_request(req)
 
+
+def test_request_parse_invalid_left_justified_header_name():
+    """Test if the header name is left justifiied."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+    Content-Type: text/plain\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
+def test_request_parse_invalid_missing_colon_header_name():
+    """Test if the header name is missing a colon."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+Content-Type : text/plain\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
 Answer by Jeremy Allen

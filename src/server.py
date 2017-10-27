@@ -85,5 +85,13 @@ def parse_request(req):
 
     uri = method_uri_protocol[1]
 
+    for header in req_lines[1:-2]:
+        if header[0:1].isspace():
+            raise ValueError('Improper header formatting')
+
+        name, value = header.split(maxsplit=1)
+        if name[-1:] != b':':
+            raise ValueError('Improper header formatting')
+
 if __name__ == "__main__":
     server()
