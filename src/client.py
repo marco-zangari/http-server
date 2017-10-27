@@ -15,7 +15,7 @@ def client(message):
         message = message.encode('utf8')
     except UnicodeDecodeError:
         pass
-    c.sendall(message + b'\r\n\r\n')
+    c.sendall(message)
 
     packet = c.recv(8)
     resp = packet
@@ -24,7 +24,7 @@ def client(message):
         resp += packet
 
     c.close()
-    return resp
+    return resp.decode('utf8')
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     print(client(sys.argv[1]))
