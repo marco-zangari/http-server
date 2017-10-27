@@ -3,6 +3,7 @@
 import socket
 import sys
 from email.utils import formatdate
+from re import match
 
 
 def server():
@@ -48,11 +49,16 @@ Date: {}\r\n\
 \r\n'.format(formatdate(usegmt=True)).encode('utf8')
 
 
-def response_error():
-    """Build a well formed HTTP '500 Internal Server Error' response."""
-    return 'HTTP/1.1 500 Internal Server Error\r\n\
-Date: {}\r\n\
-\r\n'.format(formatdate(usegmt=True)).encode('utf8')
+def response_error(code, phrase):
+    """Build a well formed HTTP Error response.
+
+    Uses the given error code and reason phrase to create the response.
+    """
+    return 'HTTP/1.1 {code} {phrase}\r\n\
+Date: {date}\r\n\
+\r\n'.format(code=code,
+             phrase=phrase,
+             date=formatdate(usegmt=True)).encode('utf8')
 
 
 def parse_request(req):
@@ -89,9 +95,15 @@ def parse_request(req):
         if header[0:1].isspace():
             raise ValueError('Improper header formatting')
 
-        name, value = header.split(maxsplit=1)
+        name, value = header.split(None, 1)
         if name[-1:] != b':':
             raise ValueError('Improper header formatting')
+
+        if b'Host' in name:
+            if not match('^[A-Za-z0-9_.-~]+$', value.decode('utf8')):
+                raise ValueError('Improper Host formatting')
+
+    return uri
 
 if __name__ == "__main__":
     server()

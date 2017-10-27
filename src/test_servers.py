@@ -51,7 +51,7 @@ def test_ok_response_well_formatted(fake_socket):
                          '%a, %d %b %Y %H:%M:%S %Z')
 
 
-def test_error_response_well_formatted(fake_socket):
+def test_error_response_500_well_formatted(fake_socket):
     """Test that error reponse of 500 HTTP response is correct."""
     from server import response_error
     from datetime import datetime as time
@@ -61,7 +61,7 @@ def test_error_response_well_formatted(fake_socket):
     else:
         from httplib import HTTPResponse
 
-    source = fake_socket(response_error())
+    source = fake_socket(response_error(500, 'Internal Server Error'))
     response = HTTPResponse(source)
     response.begin()
     assert response.status == 500
@@ -69,13 +69,85 @@ def test_error_response_well_formatted(fake_socket):
                          '%a, %d %b %Y %H:%M:%S %Z')
 
 
-# def test_valid_parse_http_request():
-#     """Test the parse_request accepts valid GET http request."""
-#     from server import parse_request
-#     req = b'GET /index.html HTTP/1.1\r\n\
-# Host: www.example.com\r\n\
-# \r\n'
-#     assert parse_request(req) == b'/index.html'
+def test_error_response_501_well_formatted(fake_socket):
+    """Test that error reponse of 501 HTTP response is correct."""
+    from server import response_error
+    from datetime import datetime as time
+
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    source = fake_socket(response_error(501, 'Not Implemented'))
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.status == 501
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
+
+
+def test_error_response_400_well_formatted(fake_socket):
+    """Test that error reponse of 400 HTTP response is correct."""
+    from server import response_error
+    from datetime import datetime as time
+
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    source = fake_socket(response_error(400, 'Bad Request'))
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.status == 400
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
+
+
+def test_error_response_404_well_formatted(fake_socket):
+    """Test that error reponse of 404 HTTP response is correct."""
+    from server import response_error
+    from datetime import datetime as time
+
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    source = fake_socket(response_error(404, 'Not Found'))
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.status == 404
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
+
+
+def test_error_response_405_well_formatted(fake_socket):
+    """Test that error reponse of 405 HTTP response is correct."""
+    from server import response_error
+    from datetime import datetime as time
+
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    source = fake_socket(response_error(405, 'Method Not Allowed'))
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.status == 405
+    assert time.strptime(response.getheader('Date'),
+                         '%a, %d %b %Y %H:%M:%S %Z')
+
+
+def test_valid_parse_http_request():
+    """Test the parse_request accepts valid GET http request."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    assert parse_request(req) == b'/index.html'
 
 
 def test_request_parse_invalid_missing_host_header():
@@ -168,6 +240,28 @@ def test_request_parse_invalid_missing_colon_header_name():
     req = b'GET /index.html HTTP/1.1\r\n\
 Host: www.example.com\r\n\
 Content-Type : text/plain\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
+def test_request_parse_invalid_url_for_host_value():
+    """Test if the URL for the Host uses proper characters."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com!\r\n\
+Content-Type: text/plain\r\n\
+\r\n'
+    with pytest.raises(ValueError):
+        parse_request(req)
+
+
+def test_request_parse_invalid_url_with_unicode_for_host_value():
+    """Test if the URL for the Host does not use accented characters."""
+    from server import parse_request
+    req = b'GET /index.html HTTP/1.1\r\n\
+Host: www.ex\xc3\xa5mple.com!\r\n\
+Content-Type: text/plain\r\n\
 \r\n'
     with pytest.raises(ValueError):
         parse_request(req)
