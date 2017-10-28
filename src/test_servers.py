@@ -61,12 +61,42 @@ def test_ok_response_well_formatted(fake_socket):
     else:
         from httplib import HTTPResponse
 
-    source = fake_socket(response_ok())
+    source = fake_socket(response_ok(b'', 'text/plain'))
     response = HTTPResponse(source)
     response.begin()
     assert response.status == 200
     assert time.strptime(response.getheader('Date'),
                          '%a, %d %b %Y %H:%M:%S %Z')
+
+
+def test_ok_response_body_is_there(fake_socket):
+    """Test that request has a body."""
+    from server import response_ok
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    response_str = response_ok(b'htmlhtml', 'text/plain')
+    source = fake_socket(response_str)
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.read(len(response_str)) == b'htmlhtml'
+
+
+def test_ok_response_mime_type_is_there(fake_socket):
+    """Test that request has a proper mime_type."""
+    from server import response_ok
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    response_str = response_ok(b'htmlhtml', 'text/plain')
+    source = fake_socket(response_str)
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.getheader('Content-Type') == 'text/plain'
 
 
 def test_error_response_500_well_formatted(fake_socket):
@@ -413,6 +443,32 @@ def test_resolve_uri_failure_sub_directory_non_existence():
     with pytest.raises(IOError) as error:
         resolve_uri('/hoffman')
     assert error.match('No such file or directory')
+
+
+def test_resolve_uri_to_response_ok_working_for_html(fake_socket):
+    """Test that response_ok returns the file from resolve_uri as the body."""
+    from server import response_ok, resolve_uri
+    if sys.version_info.major == 3:
+        from http.client import HTTPResponse
+    else:
+        from httplib import HTTPResponse
+
+    response_str = response_ok(*resolve_uri('/a_web_page.html'))
+    source = fake_socket(response_str)
+    response = HTTPResponse(source)
+    response.begin()
+    assert response.read(len(response_str)) == b"""<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Code Fellows</h1>
+
+<p>A fine place to learn Python web programming!</p>
+
+</body>
+</html>
+
+"""
 
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string

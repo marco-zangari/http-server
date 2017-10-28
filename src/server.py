@@ -59,11 +59,15 @@ def server():  # pragma: no cover
         sys.exit()
 
 
-def response_ok():
+def response_ok(body, mime_type):
     """Build a well formed HTTP '200 OK' response."""
     return 'HTTP/1.1 200 OK\r\n\
-Date: {}\r\n\
-\r\n'.format(formatdate(usegmt=True)).encode('utf8')
+Date: {date}\r\n\
+Content-Type: {mime_type}\r\n\
+Content-Length: {length}\r\n\
+\r\n'.format(date=formatdate(usegmt=True),
+             mime_type=mime_type,
+             length=len(body)).encode('utf8') + body
 
 
 def response_error(code, phrase):
