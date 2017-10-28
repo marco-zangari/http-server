@@ -346,7 +346,7 @@ def test_resolve_uri_accessing_png_in_sub_dir():
                                                    'image/png')
 
 
-def test_resolve_uri_failure_from_leaving_root_dir():
+def test_resolve_uri_failure_from_leaving_root_dir_for_file():
     """Test moving up a directory from the root is invalid."""
     from server import resolve_uri
     with pytest.raises(OSError):
@@ -354,7 +354,7 @@ def test_resolve_uri_failure_from_leaving_root_dir():
 
 
 def test_resolve_uri_html_root_directory():
-    """Test if can return HTML file, with the contents of the root directory."""
+    """Test if returns HTML file, with the contents of the root directory."""
     from server import resolve_uri
     assert resolve_uri('/') == (b"""<!DOCTYPE html>
 <html>
@@ -366,6 +366,28 @@ sample.txt
 </body>
 </html>
 """, 'text/html')
+
+
+def test_resolve_uri_html_sub_directory():
+    """Test if returns HTML file, with the contents of the root directory."""
+    from server import resolve_uri
+    assert resolve_uri('/images') == (b"""<!DOCTYPE html>
+<html>
+<body>
+JPEG_example.jpg
+sample_1.png
+Sample_Scene_Balls.jpg
+</body>
+</html>
+""", 'text/html')
+
+
+def test_resolve_uri_failure_from_leaving_root_dir_for_dir():
+    """Test moving up a directory from the root is invalid."""
+    from server import resolve_uri
+    with pytest.raises(OSError):
+        resolve_uri('/../../')
+
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
 Answer by Jeremy Allen
