@@ -30,7 +30,7 @@ sentence longer than the others and has spaces too, with punctuation.'])
 def test_success_on_sending_message(message):
     """Test that message received from server gets a 200 response."""
     from client import client
-    assert client(message).split(b'\r\n')[0] == b'HTTP/1.1 200 OK'
+    assert client(message).split('\r\n')[0] == 'HTTP/1.1 200 OK'
 
 
 def test_ok_response_well_formatted(fake_socket):

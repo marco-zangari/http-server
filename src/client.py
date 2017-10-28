@@ -24,7 +24,7 @@ def client(message):
         resp += packet
 
     c.close()
-    return resp
+    return resp.decode('utf8')
 
 if __name__ == '__main__':
     print(client(sys.argv[1]))
