@@ -18,15 +18,6 @@ def server():  # pragma: no cover
         s.listen(1)
         print('Server started')
 
-        current_dir = os.getcwd()
-
-        if current_dir.endswith('/http-server'):
-            current_dir += '/src'
-        root_dir = current_dir + '/webroot'
-
-        os.chdir(root_dir)
-        print(os.getcwd())
-
         while True:
             conn, addr = s.accept()
             conn.settimeout(2)
@@ -138,22 +129,38 @@ def parse_request(req):
 
 def resolve_uri(uri):
     """Parse a request and to return a tuple."""
+    current_dir = os.getcwd()
+
+    if not current_dir.endswith('/webroot'):
+
+        if current_dir.endswith('/http-server'):
+            current_dir += '/src'
+
+        root_dir = current_dir + '/webroot'
+
+    else:
+        root_dir = current_dir
+
+    os.chdir(root_dir)
     print(os.getcwd())
+
     uri = '.' + uri
-    body = ''
+    body = b''
 
     try:
         os.chdir(uri)
 
-    except NotADirectoryError:
+    except OSError:
         dir_path, file_name = uri.rsplit('/', 1)
         os.chdir(dir_path)
         if 'webroot' not in os.getcwd():
-            raise PermissionError('Access Denied')
-        with open(file_name) as file:
+            raise OSError('Access Denied')
+        with open(file_name, 'rb') as file:
             body = file.read()
 
-        file_type = guess_type(file_name)
+        file_type = guess_type(file_name)[0]
+
+        os.chdir(root_dir)
         return body, file_type or 'text/plain'
 
 if __name__ == "__main__":  # pragma: no cover
