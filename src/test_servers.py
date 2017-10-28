@@ -352,6 +352,20 @@ def test_resolve_uri_failure_from_leaving_root_dir():
     with pytest.raises(OSError):
         resolve_uri('/../sample.txt')
 
+
+def test_resolve_uri_html_root_directory():
+    """Test if can return HTML file, with the contents of the root directory."""
+    from server import resolve_uri
+    assert resolve_uri('/') == (b"""<!DOCTYPE html>
+<html>
+<body>
+a_web_page.html
+images
+make_time.py
+sample.txt
+</body>
+</html>
+""", 'text/html')
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
 Answer by Jeremy Allen

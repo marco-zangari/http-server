@@ -149,6 +149,19 @@ def resolve_uri(uri):
 
     try:
         os.chdir(uri)
+        if 'webroot' not in os.getcwd():
+            raise OSError('Access Denied')
+        body = """<!DOCTYPE html>
+<html>
+<body>
+"""
+        for item in os.listdir('.'):
+            body += item + '\n'
+        body += """</body>
+</html>
+"""
+        os.chdir(root_dir)
+        return body.encode('utf8'), 'text/html'
 
     except OSError:
         dir_path, file_name = uri.rsplit('/', 1)
