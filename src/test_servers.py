@@ -278,11 +278,26 @@ def test_request_parse_invalid_url_with_unicode_for_host_value():
     """Test if the URL for the Host does not use accented characters."""
     from server import parse_request
     req = b'GET /index.html HTTP/1.1\r\n\
-Host: www.ex\xc3\xa5mple.com!\r\n\
+Host: www.ex\xc3\xa5mple.com\r\n\
 Content-Type: text/plain\r\n\
 \r\n'
     with pytest.raises(ValueError):
         parse_request(req)
+
+
+def test_resolve_uri_accessing_html_in_root():
+    """Test if the URL for the Host does not use accented characters."""
+    from server import resolve_uri
+    assert resolve_uri('/a_web_page.html') == ("""<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Code Fellows</h1>
+
+<p>A fine place to learn Python web programming!</p>
+
+</body>
+</html>""", 'text/html')
 
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string

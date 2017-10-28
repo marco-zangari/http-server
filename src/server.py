@@ -2,6 +2,8 @@
 
 import socket
 import sys
+import os
+from mimetypes import guess_type
 from email.utils import formatdate
 from re import match
 
@@ -15,6 +17,16 @@ def server():  # pragma: no cover
         s.bind(('127.0.0.1', 3000))
         s.listen(1)
         print('Server started')
+
+        current_dir = os.getcwd()
+
+        if current_dir.endswith('/http-server'):
+            current_dir += '/src'
+        root_dir = current_dir + '/webroot'
+
+        os.chdir(root_dir)
+        print(os.getcwd())
+
         while True:
             conn, addr = s.accept()
             conn.settimeout(2)
@@ -122,6 +134,27 @@ def parse_request(req):
                 raise ValueError('Improper Host formatting')
 
     return uri
+
+
+def resolve_uri(uri):
+    """Parse a request and to return a tuple."""
+    print(os.getcwd())
+    uri = '.' + uri
+    body = ''
+
+    try:
+        os.chdir(uri)
+
+    except NotADirectoryError:
+        dir_path, file_name = uri.rsplit('/', 1)
+        os.chdir(dir_path)
+        if 'webroot' not in os.getcwd():
+            raise PermissionError('Access Denied')
+        with open(file_name) as file:
+            body = file.read()
+
+        file_type = guess_type(file_name)
+        return body, file_type or 'text/plain'
 
 if __name__ == "__main__":  # pragma: no cover
     server()
