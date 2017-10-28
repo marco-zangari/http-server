@@ -349,8 +349,9 @@ def test_resolve_uri_accessing_png_in_sub_dir():
 def test_resolve_uri_failure_from_leaving_root_dir_for_file():
     """Test moving up a directory from the root is invalid."""
     from server import resolve_uri
-    with pytest.raises(OSError):
-        resolve_uri('/../sample.txt')
+    with pytest.raises(OSError) as error:
+        resolve_uri('/../server.py')
+    assert error.match('Access Denied')
 
 
 def test_resolve_uri_html_root_directory():
@@ -369,7 +370,7 @@ sample.txt
 
 
 def test_resolve_uri_html_sub_directory():
-    """Test if returns HTML file, with the contents of the root directory."""
+    """Test if returns HTML file, with the contents of a sub-directory."""
     from server import resolve_uri
     assert resolve_uri('/images') == (b"""<!DOCTYPE html>
 <html>
@@ -385,8 +386,9 @@ Sample_Scene_Balls.jpg
 def test_resolve_uri_failure_from_leaving_root_dir_for_dir():
     """Test moving up a directory from the root is invalid."""
     from server import resolve_uri
-    with pytest.raises(OSError):
+    with pytest.raises(OSError) as error:
         resolve_uri('/../../')
+    assert error.match('Access Denied')
 
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string

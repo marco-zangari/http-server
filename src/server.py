@@ -128,28 +128,29 @@ def parse_request(req):
 
 
 def resolve_uri(uri):
-    """Parse a request and to return a tuple."""
-    current_dir = os.getcwd()
+    """Get the file indicated by the URI and extract its contents and type.
 
-    if not current_dir.endswith('/webroot'):
+    If the URI refers to a directory, the contents of the directory
+    are listed in HTML.
 
-        if current_dir.endswith('/http-server'):
-            current_dir += '/src'
+    Returns: 2-tuple, body of the file as a bytestring, mimetype of file.
+                      Default mimetype is text/plain.
 
-        root_dir = current_dir + '/webroot'
+    OSError - Access denied. URI is not inside the root directory.
+    IOError - No such file or directory.
+    """
+    current_path = os.path.abspath(__file__)
 
-    else:
-        root_dir = current_dir
+    root_path = current_path.rsplit('/', 1)[0] + '/webroot'
 
-    os.chdir(root_dir)
+    os.chdir(root_path)
     print(os.getcwd())
 
     uri = '.' + uri
-    body = b''
 
     try:
         os.chdir(uri)
-        if 'webroot' not in os.getcwd():
+        if not os.getcwd().startswith(root_path):
             raise OSError('Access Denied')
         body = """<!DOCTYPE html>
 <html>
@@ -160,21 +161,29 @@ def resolve_uri(uri):
         body += """</body>
 </html>
 """
-        os.chdir(root_dir)
+        os.chdir(root_path)
         return body.encode('utf8'), 'text/html'
 
-    except OSError:
-        dir_path, file_name = uri.rsplit('/', 1)
-        os.chdir(dir_path)
-        if 'webroot' not in os.getcwd():
-            raise OSError('Access Denied')
-        with open(file_name, 'rb') as file:
-            body = file.read()
+    except OSError as error:
+        if 'No such file or directory' in error.args:
+            raise IOError('No such file or directory: ' + error.filename)
 
-        file_type = guess_type(file_name)[0]
+        elif 'Not a directory' in error.args:
+            dir_path, file_name = uri.rsplit('/', 1)
+            os.chdir(dir_path)
+            if not os.getcwd().startswith(root_path):
+                raise OSError('Access Denied')
 
-        os.chdir(root_dir)
-        return body, file_type or 'text/plain'
+            with open(file_name, 'rb') as file:
+                body = file.read()
+
+            file_type = guess_type(file_name)[0]
+
+            os.chdir(root_path)
+            return body, file_type or 'text/plain'
+
+        else:
+            raise error
 
 if __name__ == "__main__":  # pragma: no cover
     server()
