@@ -390,6 +390,30 @@ def test_resolve_uri_failure_from_leaving_root_dir_for_dir():
         resolve_uri('/../../')
     assert error.match('Access Denied')
 
+
+def test_resolve_uri_failure_root_file_non_existence():
+    """Test that file does not exist though called."""
+    from server import resolve_uri
+    with pytest.raises(IOError) as error:
+        resolve_uri('/indexhoffman.html')
+    assert error.match('No such file or directory')
+
+
+def test_resolve_uri_failure_sub_directory_file_non_existence():
+    """Test that file in a sub directory does not exist though called."""
+    from server import resolve_uri
+    with pytest.raises(IOError) as error:
+        resolve_uri('/images/indexhoffman.png')
+    assert error.match('No such file or directory')
+
+
+def test_resolve_uri_failure_sub_directory_non_existence():
+    """Test that sub directory does not exist though called."""
+    from server import resolve_uri
+    with pytest.raises(IOError) as error:
+        resolve_uri('/hoffman')
+    assert error.match('No such file or directory')
+
 """
 https://stackoverflow.com/questions/24728088/python-parse-http-response-string
 Answer by Jeremy Allen
