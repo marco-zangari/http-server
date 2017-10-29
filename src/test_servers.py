@@ -24,13 +24,13 @@ def fake_socket():
     return FakeSocket
 
 
-# @pytest.mark.parametrize('message', ['', 'M', 'Hello World!', 'aaaaaaab',
-#                                      'aaaaaaabaaaaaaab', 'éclair', 'This is a \
-# sentence longer than the others and has spaces too, with punctuation.'])
-# def test_fail_on_sending_message(message):
-#     """Test that message received from server is a 400 response."""
-#     from client import client
-#     assert client(message).split('\r\n')[0] == 'HTTP/1.1 400 Bad Request'
+@pytest.mark.parametrize('message', ['', 'M', 'Hello World!', 'aaaaaaab',
+                                     'aaaaaaabaaaaaaab', 'éclair', 'This is a \
+sentence longer than the others and has spaces too, with punctuation.'])
+def test_fail_on_sending_message(message):
+    """Test that message received from server is a 400 response."""
+    from client import client
+    assert client(message).split('\r\n')[0] == 'HTTP/1.1 400 Bad Request'
 
 
 def test_success_on_sending_http_requests():
@@ -489,36 +489,4 @@ def test_resolve_uri_to_response_ok_working_for_html(fake_socket):
 </body>
 </html>
 
-"""
-
-"""
-https://stackoverflow.com/questions/24728088/python-parse-http-response-string
-Answer by Jeremy Allen
-Written in Python 2
-# for python 2
-from httplib import HTTPResponse
-from StringIO import StringIO
-# for python 3
-from http.client import HTTPResponse
-from io import BytesIO
-
-http_response_str = "HTTP/1.1 200 OK
-Date: Thu, Jul  3 15:27:54 2014
-Content-Type: text/xml; charset="utf-8"
-Connection: close
-Content-Length: 626"
-
-class FakeSocket():
-    def __init__(self, response_str):
-        self._file = StringIO(response_str)
-    def makefile(self, *args, **kwargs):
-        return self._file
-
-source = FakeSocket(http_response_str)
-response = HTTPResponse(source)
-response.begin()
-print "status:", response.status
-print "single header:", response.getheader('Content-Type')
-print "content:", response.read(len(http_response_str))
-# the len here will give a 'big enough' value to read the whole content
 """
