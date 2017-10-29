@@ -154,10 +154,13 @@ def resolve_uri(uri):
 
     uri = '.' + uri
 
+    abs_uri = os.path.abspath(uri)
+    if not abs_uri.startswith(root_path):
+        raise OSError('Access Denied')
+
     try:
         os.chdir(uri)
-        if not os.getcwd().startswith(root_path):
-            raise OSError('Access Denied')
+
         body = """<!DOCTYPE html>
 <html>
 <body>
@@ -178,15 +181,9 @@ def resolve_uri(uri):
         elif 'Not a directory' in error.args:
             dir_path, file_name = uri.rsplit('/', 1)
             os.chdir(dir_path)
-            if not os.getcwd().startswith(root_path):
-                raise OSError('Access Denied')
 
-            try:
-                with open(file_name, 'rb') as file:
-                    body = file.read()
-            except IOError as error:
-                os.chdir(script_root_path)
-                raise error
+            with open(file_name, 'rb') as file:
+                body = file.read()
 
             file_type = guess_type(file_name)[0]
 
