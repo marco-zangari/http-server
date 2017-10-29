@@ -6,8 +6,6 @@ import os
 from mimetypes import guess_type
 from email.utils import formatdate
 from re import match
-from gevent.server import StreamServer
-from gevent.monkey import patch_all
 
 
 def server():  # pragma: no cover
