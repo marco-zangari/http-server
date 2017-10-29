@@ -6,24 +6,28 @@ Server and client built with Python sockets
 **Version**: 4.1.0
 
 ## Overview
-To make a simple http server and client to receive http requests and send http responses.
+To make a simple blocking http server and client to receive http requests and send http responses. Also to make a simple concurrent http server using gevent.
 
 ## Getting Started
 To get started, use:
 ```
 pip install http-server
 ```
-Start the server with:
+Start the blocking server with:
 ```
 python server.py
 ```
-In a separate terminal send messages with:
+Start the concurrent server with:
 ```
-python client.py <add your message>
+python concurrent_server.py
+```
+In a separate terminal send HTTP requests with:
+```
+python client.py <add your request>
 ```
 
 ## Architecture
-Written in python, tested with pytest and tox.
+Written in Python, built using gevent, tested with pytest and tox.
 
 ## Change Log
 **10-29-2017 7:46pm** - Concurrent server module added, built using gevent
