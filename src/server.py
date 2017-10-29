@@ -155,7 +155,8 @@ def resolve_uri(uri):
     if not abs_uri.startswith(root_path):
         raise OSError('Access Denied')
 
-    try:
+    if os.path.isfile(abs_uri):
+
         with open(abs_uri, 'rb') as file:
             body = file.read()
 
@@ -163,22 +164,21 @@ def resolve_uri(uri):
 
         return body, file_type or 'text/plain'
 
-    except IOError as error:
-        if 'Is a directory' in error.args:
+    elif os.path.isdir(abs_uri):
 
-            body = """<!DOCTYPE html>
+        body = """<!DOCTYPE html>
 <html>
 <body>
 """
-            for item in os.listdir(abs_uri):
-                body += item + '\n'
-            body += """</body>
+        for item in os.listdir(abs_uri):
+            body += item + '\n'
+        body += """</body>
 </html>
 """
-            return body.encode('utf8'), 'text/html'
+        return body.encode('utf8'), 'text/html'
 
-        else:
-            raise error
+    else:
+        raise IOError('No such file or directory.')
 
 if __name__ == "__main__":  # pragma: no cover
     server()
