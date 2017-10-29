@@ -26,6 +26,8 @@ python client.py <add your message>
 Written in python, tested with pytest and tox.
 
 ## Change Log
+**10-29-2017 7:46pm** - Concurrent server module added, built using gevent
+
 **10-29-2017 6:00pm** - Server responds with files requested through HTTP GET requests
 
 **10-27-2017 4:06pm** - Server now requires properly formatted HTTP requests
