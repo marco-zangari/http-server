@@ -36,4 +36,5 @@ Written in python, tested with pytest and tox.
 
 ## Resources
 Python [OS Module Docs](https://docs.python.org/3/library/os.html)
+
 Jeremy Allen: Checking that a string can be parsed as an http response, [StackOverflow](https://stackoverflow.com/questions/24728088/python-parse-http-response-string/24729316#24729316)
