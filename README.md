@@ -3,7 +3,7 @@ Server and client built with Python sockets
 
 **Author**: Megan Flood, Marco Zangari
 
-**Version**: 4.0.0
+**Version**: 4.1.0
 
 ## Overview
 To make a simple http server and client to receive http requests and send http responses.

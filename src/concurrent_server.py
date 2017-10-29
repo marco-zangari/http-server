@@ -1,6 +1,7 @@
 """Simple concurrent server built using gevent."""
 
 import socket
+import sys
 from gevent.server import StreamServer
 from gevent.monkey import patch_all
 from server import response_ok, response_error, parse_request, resolve_uri
@@ -8,10 +9,16 @@ from server import response_ok, response_error, parse_request, resolve_uri
 
 def server():  # pragma: no cover
     """Instantiate a new server to serve forever."""
-    patch_all()
-    s = StreamServer(('127.0.0.1', 3000), send_http_response)
-    print('Starting server on port 3000')
-    s.serve_forever()
+    try:
+        patch_all()
+        s = StreamServer(('127.0.0.1', 3000), send_http_response)
+        print('Starting server on port 3000')
+        s.serve_forever()
+
+    except KeyboardInterrupt:
+        s.close()
+        print('Server closed')
+        sys.exit()
 
 
 def send_http_response(conn, address):  # pragma: no cover
