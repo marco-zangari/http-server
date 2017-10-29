@@ -2,6 +2,8 @@
 
 import socket
 import sys
+import os
+from mimetypes import guess_type
 from email.utils import formatdate
 from re import match
 
@@ -15,6 +17,7 @@ def server():  # pragma: no cover
         s.bind(('127.0.0.1', 3000))
         s.listen(1)
         print('Server started')
+
         while True:
             conn, addr = s.accept()
             conn.settimeout(2)
@@ -33,7 +36,8 @@ def server():  # pragma: no cover
 
             try:
                 uri = parse_request(request)
-                response = response_ok()
+                uri = uri if isinstance(uri, str) else uri.decode('utf8')
+                response = response_ok(*resolve_uri(uri))
 
             except ValueError:
                 response = response_error(400, 'Bad Request')
@@ -43,6 +47,9 @@ def server():  # pragma: no cover
                     response = response_error(405, 'Method Not Allowed')
                 else:
                     response = response_error(501, 'Not Implmented')
+
+            except (OSError, IOError) as error:
+                response = response_error(404, 'Not Found')
 
             conn.sendall(response)
             conn.close()
@@ -56,11 +63,15 @@ def server():  # pragma: no cover
         sys.exit()
 
 
-def response_ok():
+def response_ok(body, mime_type):
     """Build a well formed HTTP '200 OK' response."""
     return 'HTTP/1.1 200 OK\r\n\
-Date: {}\r\n\
-\r\n'.format(formatdate(usegmt=True)).encode('utf8')
+Date: {date}\r\n\
+Content-Type: {mime_type}\r\n\
+Content-Length: {length}\r\n\
+\r\n'.format(date=formatdate(usegmt=True),
+             mime_type=mime_type,
+             length=len(body)).encode('utf8') + body
 
 
 def response_error(code, phrase):
@@ -101,7 +112,6 @@ def parse_request(req):
         raise NotImplementedError('Server only accepts GET requests')
 
     if not method_uri_protocol[1].startswith(b'/'):
-        print(method_uri_protocol[1][0])
         raise ValueError('Improper resource path formatting')
 
     if method_uri_protocol[2] != b'HTTP/1.1':
@@ -122,6 +132,70 @@ def parse_request(req):
                 raise ValueError('Improper Host formatting')
 
     return uri
+
+
+def resolve_uri(uri):
+    """Get the file indicated by the URI and extract its contents and type.
+
+    If the URI refers to a directory, the contents of the directory
+    are listed in HTML.
+
+    Returns: 2-tuple, body of the file as a bytestring, mimetype of file.
+                      Default mimetype is text/plain.
+
+    OSError - Access denied. URI is not inside the root directory.
+    IOError - No such file or directory.
+    """
+    script_root_path = os.path.abspath(__file__).rsplit('/', 2)[0]
+
+    root_path = script_root_path + '/src/webroot'
+
+    os.chdir(root_path)
+
+    uri = '.' + uri
+
+    try:
+        os.chdir(uri)
+        if not os.getcwd().startswith(root_path):
+            raise OSError('Access Denied')
+        body = """<!DOCTYPE html>
+<html>
+<body>
+"""
+        for item in os.listdir('.'):
+            body += item + '\n'
+        body += """</body>
+</html>
+"""
+        os.chdir(script_root_path)
+        return body.encode('utf8'), 'text/html'
+
+    except OSError as error:
+        if 'No such file or directory' in error.args:
+            os.chdir(script_root_path)
+            raise IOError('No such file or directory: ' + error.filename)
+
+        elif 'Not a directory' in error.args:
+            dir_path, file_name = uri.rsplit('/', 1)
+            os.chdir(dir_path)
+            if not os.getcwd().startswith(root_path):
+                raise OSError('Access Denied')
+
+            try:
+                with open(file_name, 'rb') as file:
+                    body = file.read()
+            except IOError as error:
+                os.chdir(script_root_path)
+                raise error
+
+            file_type = guess_type(file_name)[0]
+
+            os.chdir(script_root_path)
+            return body, file_type or 'text/plain'
+
+        else:
+            os.chdir(script_root_path)
+            raise error
 
 if __name__ == "__main__":  # pragma: no cover
     server()

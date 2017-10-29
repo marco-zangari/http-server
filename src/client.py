@@ -18,12 +18,25 @@ def client(message):
     c.sendall(message)
 
     packet = c.recv(8)
-    resp = packet
-    while b'\r\n\r\n' not in resp:
+    resp_head = packet
+    while b'\r\n\r\n' not in resp_head:
         packet = c.recv(8)
-        resp += packet
+        resp_head += packet
+
+    headers = {line.split(b':', 1)[0]: line.split(b':', 1)[1]
+               for line in resp_head.split(b'\r\n')[1:-2]}
+
+    resp_body = b''
+
+    body_length = int(headers.get(b'Content-Length', 0))
+    acquired_body_length = len(resp_head.split(b'\r\n\r\n')[1])
+
+    while len(resp_body) < body_length - acquired_body_length:
+        packet = c.recv(8)
+        resp_body += packet
 
     c.close()
+    resp = resp_head + resp_body
     return resp.decode('utf8')
 
 if __name__ == '__main__':  # pragma: no cover
