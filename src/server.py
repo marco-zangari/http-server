@@ -36,7 +36,8 @@ def server():  # pragma: no cover
 
             try:
                 uri = parse_request(request)
-                response = response_ok()
+                uri = uri if isinstance(uri, str) else uri.decode('utf8')
+                response = response_ok(*resolve_uri(uri))
 
             except ValueError:
                 response = response_error(400, 'Bad Request')
@@ -46,6 +47,9 @@ def server():  # pragma: no cover
                     response = response_error(405, 'Method Not Allowed')
                 else:
                     response = response_error(501, 'Not Implmented')
+
+            except (OSError, IOError) as error:
+                response = response_error(404, 'Not Found')
 
             conn.sendall(response)
             conn.close()
@@ -108,7 +112,6 @@ def parse_request(req):
         raise NotImplementedError('Server only accepts GET requests')
 
     if not method_uri_protocol[1].startswith(b'/'):
-        print(method_uri_protocol[1][0])
         raise ValueError('Improper resource path formatting')
 
     if method_uri_protocol[2] != b'HTTP/1.1':
@@ -143,12 +146,11 @@ def resolve_uri(uri):
     OSError - Access denied. URI is not inside the root directory.
     IOError - No such file or directory.
     """
-    current_path = os.path.abspath(__file__)
+    script_root_path = os.path.abspath(__file__).rsplit('/', 2)[0]
 
-    root_path = current_path.rsplit('/', 1)[0] + '/webroot'
+    root_path = script_root_path + '/src/webroot'
 
     os.chdir(root_path)
-    print(os.getcwd())
 
     uri = '.' + uri
 
@@ -165,11 +167,12 @@ def resolve_uri(uri):
         body += """</body>
 </html>
 """
-        os.chdir(root_path)
+        os.chdir(script_root_path)
         return body.encode('utf8'), 'text/html'
 
     except OSError as error:
         if 'No such file or directory' in error.args:
+            os.chdir(script_root_path)
             raise IOError('No such file or directory: ' + error.filename)
 
         elif 'Not a directory' in error.args:
@@ -178,15 +181,20 @@ def resolve_uri(uri):
             if not os.getcwd().startswith(root_path):
                 raise OSError('Access Denied')
 
-            with open(file_name, 'rb') as file:
-                body = file.read()
+            try:
+                with open(file_name, 'rb') as file:
+                    body = file.read()
+            except IOError as error:
+                os.chdir(script_root_path)
+                raise error
 
             file_type = guess_type(file_name)[0]
 
-            os.chdir(root_path)
+            os.chdir(script_root_path)
             return body, file_type or 'text/plain'
 
         else:
+            os.chdir(script_root_path)
             raise error
 
 if __name__ == "__main__":  # pragma: no cover

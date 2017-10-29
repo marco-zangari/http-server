@@ -36,10 +36,31 @@ def fake_socket():
 def test_success_on_sending_http_requests():
     """Test that message received from server is a 200 response."""
     from client import client
-    req = 'GET /index.html HTTP/1.1\r\n\
+    req = 'GET /sample.txt HTTP/1.1\r\n\
 Host: www.example.com\r\n\
 \r\n'
     assert client(req).split('\r\n')[0] == 'HTTP/1.1 200 OK'
+
+
+def test_success_sending_http_request_retrieves_file_body():
+    """Test that message received from server is a 200 response."""
+    from client import client
+    req = 'GET /sample.txt HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    assert client(req).split('\r\n\r\n')[1] == """This is a very simple text file.
+Just to show that we can serve it up.
+It is three lines long.
+"""
+
+
+def test_fail_on_getting_missing_file():
+    """Test that message received from server is a 200 response."""
+    from client import client
+    req = 'GET /index.html HTTP/1.1\r\n\
+Host: www.example.com\r\n\
+\r\n'
+    assert client(req).split('\r\n')[0] == 'HTTP/1.1 404 Not Found'
 
 
 def test_fail_on_sending_non_get_http_requests():
