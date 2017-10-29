@@ -43,7 +43,7 @@ Host: www.example.com\r\n\
 
 
 def test_success_sending_http_request_retrieves_file_body():
-    """Test that message received from server is a 200 response."""
+    """Test that message received has a file body."""
     from client import client
     req = 'GET /sample.txt HTTP/1.1\r\n\
 Host: www.example.com\r\n\
@@ -55,7 +55,7 @@ It is three lines long.
 
 
 def test_fail_on_getting_missing_file():
-    """Test that message received from server is a 200 response."""
+    """Test that message received from server is a 404 response."""
     from client import client
     req = 'GET /index.html HTTP/1.1\r\n\
 Host: www.example.com\r\n\
