@@ -3,7 +3,7 @@ Server and client built with Python sockets
 
 **Author**: Megan Flood, Marco Zangari
 
-**Version**: 4.1.0
+**Version**: 4.1.1
 
 ## Overview
 To make a simple blocking http server and client to receive http requests and send http responses. Also to make a simple concurrent http server using gevent.
@@ -30,6 +30,8 @@ python client.py <add your request>
 Written in Python, built using gevent, tested with pytest and tox.
 
 ## Change Log
+**10-29-2017 9:50pm** - Refactored resolution of URI to improve security
+
 **10-29-2017 7:46pm** - Concurrent server module added, built using gevent
 
 **10-29-2017 6:00pm** - Server responds with files requested through HTTP GET requests
