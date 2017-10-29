@@ -146,53 +146,39 @@ def resolve_uri(uri):
     OSError - Access denied. URI is not inside the root directory.
     IOError - No such file or directory.
     """
-    script_root_path = os.path.abspath(__file__).rsplit('/', 2)[0]
+    script_root_path = os.path.abspath(__file__).rsplit('/', 1)[0]
 
-    root_path = script_root_path + '/src/webroot'
+    root_path = script_root_path + '/webroot'
 
-    os.chdir(root_path)
+    abs_uri = os.path.abspath(root_path + uri)
 
-    uri = '.' + uri
-
-    abs_uri = os.path.abspath(uri)
     if not abs_uri.startswith(root_path):
         raise OSError('Access Denied')
 
-    try:
-        os.chdir(uri)
+    if os.path.isfile(abs_uri):
+
+        with open(abs_uri, 'rb') as file:
+            body = file.read()
+
+        file_type = guess_type(abs_uri)[0]
+
+        return body, file_type or 'text/plain'
+
+    elif os.path.isdir(abs_uri):
 
         body = """<!DOCTYPE html>
 <html>
 <body>
 """
-        for item in os.listdir('.'):
+        for item in os.listdir(abs_uri):
             body += item + '\n'
         body += """</body>
 </html>
 """
-        os.chdir(script_root_path)
         return body.encode('utf8'), 'text/html'
 
-    except OSError as error:
-        if 'No such file or directory' in error.args:
-            os.chdir(script_root_path)
-            raise IOError('No such file or directory: ' + error.filename)
-
-        elif 'Not a directory' in error.args:
-            dir_path, file_name = uri.rsplit('/', 1)
-            os.chdir(dir_path)
-
-            with open(file_name, 'rb') as file:
-                body = file.read()
-
-            file_type = guess_type(file_name)[0]
-
-            os.chdir(script_root_path)
-            return body, file_type or 'text/plain'
-
-        else:
-            os.chdir(script_root_path)
-            raise error
+    else:
+        raise IOError('No such file or directory.')
 
 if __name__ == "__main__":  # pragma: no cover
     server()
